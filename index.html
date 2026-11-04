@@ -42,6 +42,9 @@ summary{cursor:pointer;color:var(--muted)}
 .card.locked{border:2px solid var(--halo)}
 .card .img{aspect-ratio:1/1.13;background:linear-gradient(160deg,var(--bg),var(--line));display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
 .card img{width:100%;height:100%;object-fit:cover;object-position:top}
+.card .noimg.npc{align-self:stretch;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px;background:repeating-linear-gradient(135deg,transparent 0 14px,color-mix(in srgb,var(--accent) 8%,transparent) 14px 28px)}
+.noimg.npc b{font-family:var(--display);font-size:24px;color:var(--fg);line-height:1.2;text-align:center;word-break:keep-all;overflow-wrap:anywhere}
+.dlg .noimg.npc{aspect-ratio:3/4;border-radius:10px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--muted)}
 .card .noimg{align-self:center;color:var(--muted);font-size:12px;padding:8px;text-align:center}
 .card .meta{padding:8px 10px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
 .card .name{font-family:var(--display);font-weight:800;font-size:16px}
@@ -120,7 +123,7 @@ footer a{color:var(--muted)}
 
   <footer>
     生徒データと画像は <a href="https://schaledb.com/" target="_blank" rel="noopener">SchaleDB</a> から読み込んで表示しています（このファイル自体には含みません）。
-    スペースキーでも引けます。カード右上の 📌 で固定すると、次に引いても残ります。
+    ストーリーにだけ登場する未実装キャラは画像なしの名前カードで出します（一覧は神ゲー攻略・ゲームエイトの「未実装キャラ一覧」をもとに作成）。スペースキーでも引けます。カード右上の 📌 で固定すると、次に引いても残ります。
   </footer>
 </div>
 
@@ -132,7 +135,70 @@ const SOURCES = [
   { name: "SchaleDB（GitHubミラー・古いデータ）", data: "https://raw.githubusercontent.com/SchaleDB/SchaleDB/main/data/jp/", img: "https://raw.githubusercontent.com/SchaleDB/SchaleDB/main/images/student/" },
 ];
 const IMG_BASES = SOURCES.map(s => s.img);
-const SCHOOL_JA = { Abydos:"アビドス", Gehenna:"ゲヘナ", Trinity:"トリニティ", Millennium:"ミレニアム", Hyakkiyako:"百鬼夜行", Shanhaijing:"山海経", RedWinter:"レッドウィンター", Valkyrie:"ヴァルキューレ", SRT:"SRT", Arius:"アリウス", Highlander:"ハイランダー", Wildhunt:"ワイルドハント", Sakugawa:"柵川中学", Tokiwadai:"常盤台中学", ETC:"その他", Custom:"自分で追加" };
+const SCHOOL_JA = { Abydos:"アビドス", Gehenna:"ゲヘナ", Trinity:"トリニティ", Millennium:"ミレニアム", Hyakkiyako:"百鬼夜行", Shanhaijing:"山海経", RedWinter:"レッドウィンター", Valkyrie:"ヴァルキューレ", SRT:"SRT", Arius:"アリウス", Highlander:"ハイランダー", Wildhunt:"ワイルドハント", Sakugawa:"柵川中学", Tokiwadai:"常盤台中学", Odyssey:"オデュッセイア", Federal:"連邦生徒会", Kronos:"クロノス", ETC:"その他", Custom:"自分で追加" };
+
+// ゲームでは未実装（ストーリー等に登場のみ）のキャラ。出典：神ゲー攻略「未実装キャラ一覧」（2026/10/24更新）、ゲームエイト「未実装キャラ一覧」
+// [名前, 苗字, ふりがな, 所属, 初登場]
+const NPC_RAW = [
+  ["ユメ","梔子","くちなし","Abydos","Vol.1 対策委員会編"],
+  ["コユキ（バニーガール）","","","Millennium","船上のバニーチェイサー"],
+  ["チヒロ（キャンプ）","","","Millennium","電脳新春行進曲"],
+  ["トキ（制服）","","","Millennium","Vol.2 時計じかけの花のパヴァーヌ編"],
+  ["ミライ","","","Millennium","Code:BOX ミレニアムに迫る影"],
+  ["ツバサ","羽咋","はねもと","Millennium","キヴォトス・未確認ミステリー"],
+  ["マコト（ドレス）","","","Gehenna","陽ひらく彼女たちの小夜曲"],
+  ["イブキ（ドレス）","","","Gehenna","陽ひらく彼女たちの小夜曲"],
+  ["雷帝","","","Gehenna","Vol.1 対策委員会編"],
+  ["マユミ","降旗","ふりはた","Gehenna","第2部Vol.1 炎と影編"],
+  ["カレン","明楽","みょうらく","Gehenna","第2部Vol.1 炎と影編"],
+  ["ショウコ","五十嵐","いがらし","Gehenna","第2部Vol.1 炎と影編"],
+  ["クズノハ","","","Hyakkiyako","Vol.3 エデン条約編"],
+  ["アラタ","","","Hyakkiyako","Vol.5 百花繚乱編"],
+  ["アヤメ","七稜","ななかど","Hyakkiyako","Vol.5 百花繚乱編"],
+  ["シュロ","箭吹","やぶき","Hyakkiyako","Vol.5 百花繚乱編"],
+  ["コクリコ","","","Hyakkiyako","Vol.5 百花繚乱編"],
+  ["アザミ","土生","はぶ","Hyakkiyako","Vol.5 百花繚乱編"],
+  ["カグヤ","漆原","うるしばら","Shanhaijing","月華夢想"],
+  ["メル（温泉）","","","RedWinter","227号温泉郷の運営記録！"],
+  ["ミスズ","監原","かんばら","Valkyrie","キヴォトス・未確認ミステリー"],
+  ["ユキノ","七度","しちど","SRT","Vol.4 カルバノグの兎編"],
+  ["マイア","立木","たちき","Arius","Vol.6 過ぎ去りし刻のオラトリオ"],
+  ["スオウ","朝霧","あさぎり","Highlander","Vol.1 対策委員会編"],
+  ["ミリア","","","Wildhunt","我らオカルト研究会！"],
+  ["ヒロミ","","","Wildhunt","誰が為の芸術"],
+  ["ツムギ","","","Wildhunt","-ive aLIVE!"],
+  ["スミカ","小森","こもり","Odyssey","出航！万魔船 マコト議長の華麗なる避暑"],
+  ["サユリ","","","Odyssey","DIVE into OCEAN！"],
+  ["マキナ","","","Odyssey","DIVE into OCEAN！"],
+  ["ミナト","海路","うみじ","Odyssey","第2部Vol.1 オデュッセイア編"],
+  ["アミ","灯下","ともした","Odyssey","第2部Vol.1 オデュッセイア編"],
+  ["ナナミ","護守","このかみ","Odyssey","DIVE into OCEAN！"],
+  ["ミツキ","千石","せんごく","Odyssey","第2部Vol.1 オデュッセイア編"],
+  ["サナエ","船守","ふなもり","Odyssey","第2部Vol.1 オデュッセイア編"],
+  ["連邦生徒会長","","","Federal","プロローグ"],
+  ["リン","七神","","Federal","プロローグ"],
+  ["モモカ","由良木","","Federal","プロローグ"],
+  ["カヤ","不知火","","Federal","Vol.4 カルバノグの兎編"],
+  ["アユム","","","Federal","ミッション"],
+  ["スモモ","","","Federal","Vol.3 エデン条約編"],
+  ["アオイ","扇喜","おうぎ","Federal","Vol.3 エデン条約編"],
+  ["ハイネ","","","Federal","Vol.3 エデン条約編"],
+  ["シノン","川流","","Kronos","新春狂想曲第68番"],
+  ["マイ","風巻","","Kronos","戦術対抗戦"],
+  ["アキラ","清澄","","ETC","白亜の予告状"],
+  ["カイ","申谷","しんたに","ETC","龍武同舟"],
+  ["アケミ","栗浜","くりはま","ETC","Sheside outside"],
+  ["ニヤニヤ教授","","","ETC","Sheside outside"],
+  ["キョウコ","密井","みつい","ETC",""],
+  ["アイン・ソフ・オウル","","","ETC","特殊作戦「デカグラマトン」編"],
+  ["マルクト","","","ETC","特殊作戦「デカグラマトン」編"],
+  ["ジェネラル","","","ETC","Vol.4 カルバノグの兎編"],
+  ["デカルト","","","ETC","Vol.4 カルバノグの兎編"],
+  ["ソラ","","","ETC","ショップ"],
+  ["アロナ","","","ETC","プロローグ"],
+  ["プラナ","","","ETC","Final.あまねく奇跡の始発点編"],
+  ["黒服","","","ETC","Vol.1 対策委員会編"],
+];
 
 const $ = id => document.getElementById(id);
 const store = {
@@ -170,8 +236,15 @@ async function load(){
         year: s.SchoolYear, age: s.CharacterAge, birthday: s.Birthday, height: s.CharHeightMetric,
         hobby: s.Hobby, intro: s.ProfileIntroduction, voice: s.CharacterVoice, illust: s.Illustrator,
       }));
+      // SchaleDBに入った（実装された）キャラは内蔵リストから外す
+      const have = new Set(students.map(s => s.name));
+      const npcs = NPC_RAW.filter(r => !have.has(r[0])).map((r,i) => ({
+        id: "n"+i, npc: true, released: false, alt: /[（(]/.test(r[0]),
+        name: r[0], family: r[1], personal: r[0].replace(/[（(].*$/, ""), ruby: r[2], school: r[3], debut: r[4],
+      }));
       const un = students.filter(s => !s.released).length;
-      $("status").textContent = `${src.name}から ${students.length} 人を読み込みました（うち未実装 ${un} 人）`;
+      students = students.concat(npcs);
+      $("status").textContent = `${src.name}から ${students.length - npcs.length} 人（うち実装予定 ${un} 人）＋ストーリー登場のみのキャラ ${npcs.length} 人`;
       buildSchools();
       return;
     }catch(e){ console.warn("読み込み失敗:", src.name, e); }
@@ -225,6 +298,7 @@ function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j = Math.random()*(i+1
 function esc(t){ return String(t??"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
 function imgTag(s, kind){
+  if(s.npc) return `<div class="noimg npc"><span>${esc(s.family)}</span><b>${esc(s.personal)}</b><span>${esc(schoolJA[s.school]||"")}</span></div>`;
   if(s.custom) return s.img ? `<img src="${esc(s.img)}" alt="${esc(s.name)}" loading="lazy" referrerpolicy="no-referrer">` : `<div class="noimg">画像なし</div>`;
   const urls = IMG_BASES.map(b => `${b}${kind}/${s.id}.webp`);
   return `<img src="${urls[0]}" data-alt="${urls.slice(1).join("|")}" alt="${esc(s.name)}" loading="lazy" onerror="nextImg(this)">`;
@@ -258,18 +332,18 @@ $("grid").addEventListener("keydown", e => {
 });
 
 function openDetail(s){
-  const rows = [["学園", schoolJA[s.school]||s.school], ["部活", clubJA[s.club]||""], ["学年", s.year], ["年齢", s.age], ["誕生日", s.birthday], ["身長", s.height], ["趣味", s.hobby], ["CV", s.voice], ["イラスト", s.illust]]
+  const rows = [["学園", schoolJA[s.school]||s.school], ["部活", clubJA[s.club]||""], ["学年", s.year], ["年齢", s.age], ["誕生日", s.birthday], ["身長", s.height], ["趣味", s.hobby], ["CV", s.voice], ["イラスト", s.illust], ["初登場", s.debut]]
     .filter(r => r[1]);
   $("dlgBody").innerHTML = `
     <div>${imgTag(s, "portrait")}</div>
     <div>
-      <h2>${esc(s.custom ? s.name : [s.family, s.personal].filter(Boolean).join(" ") || s.name)}</h2>
+      <h2>${esc(s.custom ? s.name : [s.family, s.npc ? s.name : s.personal].filter(Boolean).join(" ") || s.name)}</h2>
       ${s.ruby ? `<div class="ruby">${esc(s.ruby)}</div>` : ""}
-      ${!s.custom && !s.released ? '<div class="err">未実装（日本版）</div>' : ""}
+      ${s.npc ? '<div class="err">未実装（ストーリーなどに登場のみ）</div>' : (!s.custom && !s.released ? '<div class="err">未実装（実装予定）</div>' : "")}
       <dl>${rows.map(r => `<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join("")}</dl>
       <p>${esc(s.custom ? s.note : s.intro)}</p>
       <div class="actions">
-        ${s.custom ? "" : `<a href="https://schaledb.com/student/${encodeURIComponent(s.path)}" target="_blank" rel="noopener">SchaleDBで見る</a>
+        ${s.custom ? "" : `${s.npc ? "" : `<a href="https://schaledb.com/student/${encodeURIComponent(s.path)}" target="_blank" rel="noopener">SchaleDBで見る</a>`}
         <a href="https://dic.pixiv.net/a/${encodeURIComponent((s.family||"")+(s.personal||s.name))}" target="_blank" rel="noopener">ピクシブ百科事典</a>`}
         <button id="dlgClose">閉じる</button>
       </div>
