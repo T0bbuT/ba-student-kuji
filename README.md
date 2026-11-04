@@ -20,3 +20,7 @@
 SchaleDB 本体から読めない場合は、GitHub 上の SchaleDB の古いミラーを使います（新しい生徒や未実装の生徒が含まれません）。
 
 ブルーアーカイブに関する権利は NEXON Games / Yostar に帰属します。本ツールは公式とは関係ありません。
+
+## 未実装キャラの画像
+
+`images/npc/` に `キャラ名.webp`（`.png` `.jpg` も可）を置くと、名前カードの代わりに画像が表示されます。対応するファイル名の一覧は [images/npc/README.md](images/npc/README.md) にあります。

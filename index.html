@@ -298,7 +298,11 @@ function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j = Math.random()*(i+1
 function esc(t){ return String(t??"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
 function imgTag(s, kind){
-  if(s.npc) return `<div class="noimg npc"><span>${esc(s.family)}</span><b>${esc(s.personal)}</b><span>${esc(schoolJA[s.school]||"")}</span></div>`;
+  if(s.npc){
+    // images/npc/<名前>.webp / .png / .jpg があれば表示、なければ名前カード
+    const urls = ["webp","png","jpg","jpeg"].map(x => `images/npc/${encodeURIComponent(s.name)}.${x}`);
+    return `<img src="${urls[0]}" data-alt="${urls.slice(1).join("|")}" data-npc="${s.id}" alt="${esc(s.name)}" loading="lazy" onerror="nextImg(this)">`;
+  }
   if(s.custom) return s.img ? `<img src="${esc(s.img)}" alt="${esc(s.name)}" loading="lazy" referrerpolicy="no-referrer">` : `<div class="noimg">画像なし</div>`;
   const urls = IMG_BASES.map(b => `${b}${kind}/${s.id}.webp`);
   return `<img src="${urls[0]}" data-alt="${urls.slice(1).join("|")}" alt="${esc(s.name)}" loading="lazy" onerror="nextImg(this)">`;
@@ -306,6 +310,11 @@ function imgTag(s, kind){
 function nextImg(el){
   const rest = (el.dataset.alt||"").split("|").filter(Boolean);
   if(rest.length){ el.dataset.alt = rest.slice(1).join("|"); el.src = rest[0]; }
+  else if(el.dataset.npc){
+    const s = students.find(x => x.id === el.dataset.npc), t = document.createElement("template");
+    t.innerHTML = `<div class="noimg npc"><span>${esc(s.family)}</span><b>${esc(s.personal)}</b><span>${esc(schoolJA[s.school]||"")}</span></div>`;
+    el.replaceWith(t.content);
+  }
   else el.replaceWith(Object.assign(document.createElement("div"), { className:"noimg", textContent:"画像を読み込めません" }));
 }
 
