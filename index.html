@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>生徒くじ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&family=Noto+Sans+JP:wght@400;600&display=swap">
+<style>
+/* Layout: 上に操作バー、下に生徒カードのグリッド。カードをクリックで詳細。 */
+:root{
+  --bg:#eef4fb; --panel:#ffffff; --fg:#1c2a3a; --muted:#5d6f84; --line:#d3deea;
+  --accent:#1e8fe6; --accent-fg:#ffffff; --halo:#ffd34d; --warn:#e0567a;
+  --display:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif;
+  --body:"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0f1824; --panel:#18263a; --fg:#e6eef8; --muted:#97a9bf; --line:#2a3d55;
+    --accent:#4fb0ff; --accent-fg:#0b1420; --halo:#ffd34d; --warn:#ff7fa0; color-scheme:dark; }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14px;line-height:1.6;
+  padding:20px max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 16px}
+h1{font-family:var(--display);font-weight:800;font-size:28px;margin:0;letter-spacing:.02em}
+h1 span{color:var(--accent)}
+.status{color:var(--muted);font-size:12px}
+.bar{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center}
+.bar label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+select,input[type=text],input[type=url],textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+button{font:inherit;cursor:pointer;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:6px 14px}
+button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-family:var(--display);font-weight:800;font-size:16px;padding:10px 26px}
+details{width:100%}
+summary{cursor:pointer;color:var(--muted)}
+.schools{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
+.card{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;animation:pop .35s ease both}
+.card:hover{border-color:var(--accent)}
+.card.locked{border:2px solid var(--halo)}
+.card .img{aspect-ratio:1/1.13;background:linear-gradient(160deg,var(--bg),var(--line));display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
+.card img{width:100%;height:100%;object-fit:cover;object-position:top}
+.card .noimg{align-self:center;color:var(--muted);font-size:12px;padding:8px;text-align:center}
+.card .meta{padding:8px 10px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.card .name{font-family:var(--display);font-weight:800;font-size:16px}
+.card .sub{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{position:absolute;top:8px;left:8px;background:var(--warn);color:#fff;font-size:11px;font-weight:600;border-radius:999px;padding:1px 8px}
+.badge.custom{background:var(--accent);color:var(--accent-fg)}
+.lock{position:absolute;top:6px;right:6px;border-radius:999px;padding:2px 9px;font-size:12px;background:var(--panel);opacity:.9}
+.card.locked .lock{background:var(--halo);color:#3a2a00;border-color:var(--halo)}
+@keyframes pop{from{transform:translateY(6px) scale(.97);opacity:.4}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.card{animation:none}}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--fg);max-width:min(760px,94vw);width:100%;padding:0}
+dialog::backdrop{background:rgba(5,12,22,.55)}
+.dlg{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:18px;padding:18px}
+@media (max-width:600px){.dlg{grid-template-columns:1fr}}
+.dlg img{width:100%;border-radius:10px;background:var(--bg)}
+.dlg h2{font-family:var(--display);margin:0 0 2px;font-size:24px}
+.dlg .ruby{color:var(--muted);font-size:12px}
+.dlg dl{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:10px 0}
+.dlg dt{color:var(--muted)}
+.dlg dd{margin:0}
+.dlg p{white-space:pre-wrap;margin:8px 0}
+.dlg .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.dlg a{color:var(--accent)}
+.custom-form{display:grid;gap:8px;margin-top:8px;max-width:520px}
+.custom-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:2px 4px 2px 10px;display:inline-flex;gap:6px;align-items:center}
+.chip button{padding:0 8px;border:none}
+footer{color:var(--muted);font-size:12px}
+footer a{color:var(--muted)}
+.err{color:var(--warn)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>生徒<span>くじ</span></h1>
+    <div class="status" id="status">生徒データを読み込み中…</div>
+  </header>
+
+  <section class="bar" aria-label="操作">
+    <button class="primary" id="roll">引く</button>
+    <label>人数
+      <select id="count">
+        <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+        <option selected>6</option><option>8</option><option>10</option><option>12</option><option>16</option>
+      </select>
+    </label>
+    <label>未実装
+      <select id="unreleased">
+        <option value="include" selected>含む</option>
+        <option value="only">未実装だけ</option>
+        <option value="exclude">含まない</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="alts"> 衣装違いも出す</label>
+    <label><input type="checkbox" id="uniq" checked> 同じ生徒は1回だけ</label>
+    <button id="copy" title="今出ている生徒の名前をコピー">名前をコピー</button>
+    <details id="schoolBox">
+      <summary>学園で絞り込む</summary>
+      <div class="schools" id="schools"></div>
+    </details>
+    <details>
+      <summary>自分で生徒を追加する（ゲーム未登場のキャラなど）</summary>
+      <form class="custom-form" id="customForm">
+        <input type="text" id="cName" placeholder="名前（例：連邦生徒会長）" required>
+        <input type="text" id="cSchool" placeholder="所属（任意）">
+        <input type="url" id="cImg" placeholder="画像URL（任意）">
+        <textarea id="cNote" rows="2" placeholder="メモ（任意）"></textarea>
+        <div><button type="submit">追加</button></div>
+      </form>
+      <div class="custom-list" id="customList"></div>
+    </details>
+  </section>
+
+  <main class="grid" id="grid" aria-live="polite"></main>
+
+  <footer>
+    生徒データと画像は <a href="https://schaledb.com/" target="_blank" rel="noopener">SchaleDB</a> から読み込んで表示しています（このファイル自体には含みません）。
+    スペースキーでも引けます。カード右上の 📌 で固定すると、次に引いても残ります。
+  </footer>
+</div>
+
+<dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+
+<script>
+const SOURCES = [
+  { name: "SchaleDB", data: "https://schaledb.com/data/jp/", img: "https://schaledb.com/images/student/" },
+  { name: "SchaleDB（GitHubミラー・古いデータ）", data: "https://raw.githubusercontent.com/SchaleDB/SchaleDB/main/data/jp/", img: "https://raw.githubusercontent.com/SchaleDB/SchaleDB/main/images/student/" },
+];
+const IMG_BASES = SOURCES.map(s => s.img);
+const SCHOOL_JA = { Abydos:"アビドス", Gehenna:"ゲヘナ", Trinity:"トリニティ", Millennium:"ミレニアム", Hyakkiyako:"百鬼夜行", Shanhaijing:"山海経", RedWinter:"レッドウィンター", Valkyrie:"ヴァルキューレ", SRT:"SRT", Arius:"アリウス", Highlander:"ハイランダー", Wildhunt:"ワイルドハント", Sakugawa:"柵川中学", Tokiwadai:"常盤台中学", ETC:"その他", Custom:"自分で追加" };
+
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem("bakuji:"+k); return v==null ? d : JSON.parse(v); }catch{ return d; } },
+  set(k, v){ try{ localStorage.setItem("bakuji:"+k, JSON.stringify(v)); }catch{} },
+};
+
+let students = [], clubJA = {}, schoolJA = {...SCHOOL_JA};
+let shown = [];            // 今表示中の生徒
+let locked = new Set();    // 固定中の Id
+let custom = store.get("custom", []);
+
+async function fetchJSON(url){
+  const r = await fetch(url, { cache: "no-cache" });
+  if(!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+async function load(){
+  for(const src of SOURCES){
+    try{
+      const raw = await fetchJSON(src.data + "students.min.json");
+      const list = Array.isArray(raw) ? raw : Object.values(raw);
+      try{
+        const loc = await fetchJSON(src.data + "localization.min.json");
+        if(loc.Club) clubJA = loc.Club;
+        if(loc.SchoolLong) Object.assign(schoolJA, loc.SchoolLong);
+        else if(loc.School) Object.assign(schoolJA, loc.School);
+      }catch{}
+      students = list.map(s => ({
+        id: s.Id, path: s.PathName, name: s.Name, school: s.School || "ETC", club: s.Club,
+        released: Array.isArray(s.IsReleased) ? !!s.IsReleased[0] : true,
+        alt: /[（(]/.test(s.Name || ""),
+        family: s.FamilyName, personal: s.PersonalName, ruby: [s.FamilyNameRuby, s.PersonalNameRuby].filter(Boolean).join(" "),
+        year: s.SchoolYear, age: s.CharacterAge, birthday: s.Birthday, height: s.CharHeightMetric,
+        hobby: s.Hobby, intro: s.ProfileIntroduction, voice: s.CharacterVoice, illust: s.Illustrator,
+      }));
+      const un = students.filter(s => !s.released).length;
+      $("status").textContent = `${src.name}から ${students.length} 人を読み込みました（うち未実装 ${un} 人）`;
+      buildSchools();
+      return;
+    }catch(e){ console.warn("読み込み失敗:", src.name, e); }
+  }
+  $("status").innerHTML = '<span class="err">生徒データを読み込めませんでした。ネット接続を確認してから再読み込みしてください。</span>';
+}
+
+function buildSchools(){
+  const saved = store.get("schools", null);
+  const names = [...new Set(students.map(s => s.school))].sort((a,b)=> countOf(b)-countOf(a));
+  if(custom.length) names.push("Custom");
+  $("schools").innerHTML = names.map(k => `<label><input type="checkbox" value="${k}" ${!saved || saved.includes(k) ? "checked":""}> ${esc(schoolJA[k]||k)} <span class="status">${k==="Custom"?custom.length:countOf(k)}</span></label>`).join("");
+  $("schools").onchange = () => store.set("schools", selectedSchools());
+}
+const countOf = k => students.filter(s => s.school===k).length;
+const selectedSchools = () => [...$("schools").querySelectorAll("input:checked")].map(i => i.value);
+
+function pool(){
+  const sch = new Set(selectedSchools());
+  const un = $("unreleased").value, alts = $("alts").checked;
+  let p = students.filter(s => sch.has(s.school)
+    && (alts || !s.alt)
+    && (un==="include" || (un==="only" ? !s.released : s.released)));
+  if(sch.has("Custom") && un!=="only") p = p.concat(custom.map((c,i)=>({ ...c, id:"c"+i, school:"Custom", custom:true, released:true })));
+  return p;
+}
+
+function baseName(s){ return s.custom ? s.name : (s.personal || s.name.replace(/[（(].*$/, "")); }
+
+function roll(){
+  const n = +$("count").value;
+  const keep = shown.filter(s => locked.has(s.id)).slice(0, n);
+  const used = new Set(keep.map(s => s.id));
+  const usedNames = new Set(keep.map(baseName));
+  const uniq = $("uniq").checked;
+  const cand = shuffle(pool().filter(s => !used.has(s.id)));
+  const out = [...keep];
+  for(const s of cand){
+    if(out.length >= n) break;
+    if(uniq && usedNames.has(baseName(s))) continue;
+    out.push(s); usedNames.add(baseName(s));
+  }
+  // 固定カードの位置はそのまま、空いた所に新しい生徒を入れる
+  const fresh = out.slice(keep.length);
+  shown = shown.slice(0, n).map(s => locked.has(s.id) ? s : fresh.shift()).filter(Boolean).concat(fresh);
+  if(!shown.length){ $("grid").innerHTML = '<p class="status">条件に合う生徒がいません。絞り込みを広げてください。</p>'; return; }
+  render();
+}
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j = Math.random()*(i+1)|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function esc(t){ return String(t??"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+function imgTag(s, kind){
+  if(s.custom) return s.img ? `<img src="${esc(s.img)}" alt="${esc(s.name)}" loading="lazy" referrerpolicy="no-referrer">` : `<div class="noimg">画像なし</div>`;
+  const urls = IMG_BASES.map(b => `${b}${kind}/${s.id}.webp`);
+  return `<img src="${urls[0]}" data-alt="${urls.slice(1).join("|")}" alt="${esc(s.name)}" loading="lazy" onerror="nextImg(this)">`;
+}
+function nextImg(el){
+  const rest = (el.dataset.alt||"").split("|").filter(Boolean);
+  if(rest.length){ el.dataset.alt = rest.slice(1).join("|"); el.src = rest[0]; }
+  else el.replaceWith(Object.assign(document.createElement("div"), { className:"noimg", textContent:"画像を読み込めません" }));
+}
+
+function render(){
+  $("grid").innerHTML = shown.map((s,i) => `
+    <article class="card ${locked.has(s.id)?"locked":""}" data-i="${i}" tabindex="0">
+      <div class="img">${imgTag(s,"collection")}</div>
+      ${s.custom ? '<span class="badge custom">追加</span>' : (!s.released ? '<span class="badge">未実装</span>' : "")}
+      <button class="lock" data-lock="${i}" title="固定する" aria-label="固定">📌</button>
+      <div class="meta">
+        <div class="name">${esc(s.name)}</div>
+        <div class="sub">${esc(schoolJA[s.school]||s.school)}${s.club ? " ・ "+esc(clubJA[s.club]||"") : ""}${s.year ? " ・ "+esc(s.year) : ""}</div>
+      </div>
+    </article>`).join("");
+}
+
+$("grid").addEventListener("click", e => {
+  const lockBtn = e.target.closest("[data-lock]");
+  if(lockBtn){ e.stopPropagation(); const s = shown[+lockBtn.dataset.lock]; locked.has(s.id) ? locked.delete(s.id) : locked.add(s.id); render(); return; }
+  const card = e.target.closest(".card"); if(card) openDetail(shown[+card.dataset.i]);
+});
+$("grid").addEventListener("keydown", e => {
+  if(e.key==="Enter"){ const card = e.target.closest(".card"); if(card) openDetail(shown[+card.dataset.i]); }
+});
+
+function openDetail(s){
+  const rows = [["学園", schoolJA[s.school]||s.school], ["部活", clubJA[s.club]||""], ["学年", s.year], ["年齢", s.age], ["誕生日", s.birthday], ["身長", s.height], ["趣味", s.hobby], ["CV", s.voice], ["イラスト", s.illust]]
+    .filter(r => r[1]);
+  $("dlgBody").innerHTML = `
+    <div>${imgTag(s, "portrait")}</div>
+    <div>
+      <h2>${esc(s.custom ? s.name : [s.family, s.personal].filter(Boolean).join(" ") || s.name)}</h2>
+      ${s.ruby ? `<div class="ruby">${esc(s.ruby)}</div>` : ""}
+      ${!s.custom && !s.released ? '<div class="err">未実装（日本版）</div>' : ""}
+      <dl>${rows.map(r => `<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join("")}</dl>
+      <p>${esc(s.custom ? s.note : s.intro)}</p>
+      <div class="actions">
+        ${s.custom ? "" : `<a href="https://schaledb.com/student/${encodeURIComponent(s.path)}" target="_blank" rel="noopener">SchaleDBで見る</a>
+        <a href="https://dic.pixiv.net/a/${encodeURIComponent((s.family||"")+(s.personal||s.name))}" target="_blank" rel="noopener">ピクシブ百科事典</a>`}
+        <button id="dlgClose">閉じる</button>
+      </div>
+    </div>`;
+  $("dlgClose").onclick = () => $("dlg").close();
+  $("dlg").showModal();
+}
+$("dlg").addEventListener("click", e => { if(e.target === $("dlg")) $("dlg").close(); });
+
+$("roll").onclick = roll;
+document.addEventListener("keydown", e => {
+  if(e.code==="Space" && !e.target.closest("input,textarea,select,button,dialog")){ e.preventDefault(); roll(); }
+});
+$("copy").onclick = async () => {
+  const text = shown.map(s => s.name).join("、");
+  try{ await navigator.clipboard.writeText(text); $("copy").textContent = "コピーしました"; }
+  catch{ $("copy").textContent = text; }
+  setTimeout(() => $("copy").textContent = "名前をコピー", 1500);
+};
+for(const id of ["count","unreleased","alts","uniq"]){
+  const el = $(id), saved = store.get(id, null);
+  if(saved!=null){ el.type==="checkbox" ? el.checked = saved : el.value = saved; }
+  el.onchange = () => store.set(id, el.type==="checkbox" ? el.checked : el.value);
+}
+
+function renderCustom(){
+  $("customList").innerHTML = custom.map((c,i) => `<span class="chip">${esc(c.name)}<button data-del="${i}" aria-label="${esc(c.name)}を削除">×</button></span>`).join("");
+}
+$("customList").onclick = e => {
+  const b = e.target.closest("[data-del]"); if(!b) return;
+  custom.splice(+b.dataset.del, 1); store.set("custom", custom); renderCustom(); buildSchools();
+};
+$("customForm").onsubmit = e => {
+  e.preventDefault();
+  custom.push({ name: $("cName").value.trim(), schoolLabel: $("cSchool").value.trim(), img: $("cImg").value.trim(), note: [$("cSchool").value.trim(), $("cNote").value.trim()].filter(Boolean).join("\n") });
+  store.set("custom", custom); e.target.reset(); renderCustom(); buildSchools();
+};
+renderCustom();
+
+load().then(() => { if(students.length) roll(); });
+</script>
+</body>
+</html>
