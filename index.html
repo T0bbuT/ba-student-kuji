@@ -167,74 +167,78 @@ const SOURCES = [
   { name: "SchaleDB（GitHubミラー・古いデータ）", data: "https://raw.githubusercontent.com/SchaleDB/SchaleDB/main/data/jp/", img: "https://raw.githubusercontent.com/SchaleDB/SchaleDB/main/images/student/" },
 ];
 const IMG_BASES = SOURCES.map(s => s.img);
-// 未実装キャラ画像の元ファイル（Blue Archive Wiki のファイル名。一覧は images/npc/sources.csv）
-const NPC_IMG_SRC = {"ユメ":"Yume_01.png","コユキ（バニーガール）":"Koyuki_(Bunnysuit)_01.png","チヒロ（キャンプ）":"Chihiro_(Camping)_01.png","トキ（制服）":"Toki_(School_Uniform)_01.png","ミライ":"Mirai_01.png","ツバサ":"Tsubasa_01.png","マコト（ドレス）":"Makoto_(Dress)_01.png","イブキ（ドレス）":"Ibuki_(Dress)_01.png","マユミ":"Mayumi_01.png","カレン":"Karen_01.png","ショウコ":"Shouko_01.png","クズノハ":"Kuzunoha_01.png","アラタ":"Arata_01.png","アヤメ":"Ayame_01.png","シュロ":"Shuro_01.png","コクリコ":"Kokuriko_01.png","アザミ":"Azami_01.png","カグヤ":"Kaguya_01.png","メル（温泉）":"Meru_(Hot_Spring)_diorama_01.png","ミスズ":"Misuzu_01.png","ユキノ":"Yukino_01.png","マイア":"Maia_01.png","スオウ":"Suou_01.png","ミリア":"Akira_(Miria)_01.png","ヒロミ":"Hiromi_01.png","ツムギ":"Tsumugi_01.png","スミカ":"Sumika_01.png","サユリ":"Sayuri_01.png","マキナ":"Makina_01.png","ミナト":"Minato_01.png","アミ":"Ami_01.png","ナナミ":"Nanami_01.png","ミツキ":"Mitsuki_01.png","サナエ":"Sanae_01.png","連邦生徒会長":"Student_Council_President_01.png","リン":"Rin_01.png","モモカ":"Momoka_01.png","カヤ":"Kaya_01.png","アユム":"Ayumu_01.png","スモモ":"Sumomo_01.png","アオイ":"Aoi_01.png","ハイネ":"Haine_01.png","シノン":"Shinon_01.png","マイ":"Mai_01.png","アキラ":"Akira_01.png","カイ":"Kai_01.png","アケミ":"Akemi_01.png","ニヤニヤ教授":"Professor_Smug_01.png","アイン":"Ein_01.png","ソフ":"Sof_01.png","オウル":"Ohr_01.png","マルクト":"Malkuth_01.png","ジェネラル":"Kaiser_PMC_General_00.png","デカルト":"Descartes_01.png","ソラ":"Sora_01.png","アロナ":"Arona_01.png","プラナ":"Plana_01.png","黒服":"Black_Suit_00.png"};
 const wikiFile = f => "https://bluearchive.wiki/wiki/File:" + encodeURI(f);
 const SCHOOL_JA = { Abydos:"アビドス", Gehenna:"ゲヘナ", Trinity:"トリニティ", Millennium:"ミレニアム", Hyakkiyako:"百鬼夜行", Shanhaijing:"山海経", RedWinter:"レッドウィンター", Valkyrie:"ヴァルキューレ", SRT:"SRT", Arius:"アリウス", Highlander:"ハイランダー", Wildhunt:"ワイルドハント", Sakugawa:"柵川中学", Tokiwadai:"常盤台中学", Odyssey:"オデュッセイア", Federal:"連邦生徒会", Kronos:"クロノス", ETC:"その他", Custom:"自分で追加" };
 
-// ゲームでは未実装（ストーリー等に登場のみ）のキャラ。出典：神ゲー攻略「未実装キャラ一覧」（2026/10/24更新）、ゲームエイト「未実装キャラ一覧」
-// [名前, 苗字, ふりがな, 所属, 初登場]
-const NPC_RAW = [
-  ["ユメ","梔子","くちなし","Abydos","Vol.1 対策委員会編"],
-  ["コユキ（バニーガール）","","","Millennium","船上のバニーチェイサー"],
-  ["チヒロ（キャンプ）","","","Millennium","電脳新春行進曲"],
-  ["トキ（制服）","","","Millennium","Vol.2 時計じかけの花のパヴァーヌ編"],
-  ["ミライ","","","Millennium","Code:BOX ミレニアムに迫る影"],
-  ["ツバサ","羽咋","はねもと","Millennium","キヴォトス・未確認ミステリー"],
-  ["マコト（ドレス）","","","Gehenna","陽ひらく彼女たちの小夜曲"],
-  ["イブキ（ドレス）","","","Gehenna","陽ひらく彼女たちの小夜曲"],
-  ["雷帝","","","Gehenna","Vol.1 対策委員会編"],
-  ["マユミ","降旗","ふりはた","Gehenna","第2部Vol.1 炎と影編"],
-  ["カレン","明楽","みょうらく","Gehenna","第2部Vol.1 炎と影編"],
-  ["ショウコ","五十嵐","いがらし","Gehenna","第2部Vol.1 炎と影編"],
-  ["クズノハ","","","Hyakkiyako","Vol.3 エデン条約編"],
-  ["アラタ","","","Hyakkiyako","Vol.5 百花繚乱編"],
-  ["アヤメ","七稜","ななかど","Hyakkiyako","Vol.5 百花繚乱編"],
-  ["シュロ","箭吹","やぶき","Hyakkiyako","Vol.5 百花繚乱編"],
-  ["コクリコ","","","Hyakkiyako","Vol.5 百花繚乱編"],
-  ["アザミ","土生","はぶ","Hyakkiyako","Vol.5 百花繚乱編"],
-  ["カグヤ","漆原","うるしばら","Shanhaijing","月華夢想"],
-  ["メル（温泉）","","","RedWinter","227号温泉郷の運営記録！"],
-  ["ミスズ","監原","かんばら","Valkyrie","キヴォトス・未確認ミステリー"],
-  ["ユキノ","七度","しちど","SRT","Vol.4 カルバノグの兎編"],
-  ["マイア","立木","たちき","Arius","Vol.6 過ぎ去りし刻のオラトリオ"],
-  ["スオウ","朝霧","あさぎり","Highlander","Vol.1 対策委員会編"],
-  ["ミリア","","","Wildhunt","我らオカルト研究会！"],
-  ["ヒロミ","","","Wildhunt","誰が為の芸術"],
-  ["ツムギ","","","Wildhunt","-ive aLIVE!"],
-  ["スミカ","小森","こもり","Odyssey","出航！万魔船 マコト議長の華麗なる避暑"],
-  ["サユリ","","","Odyssey","DIVE into OCEAN！"],
-  ["マキナ","","","Odyssey","DIVE into OCEAN！"],
-  ["ミナト","海路","うみじ","Odyssey","第2部Vol.1 オデュッセイア編"],
-  ["アミ","灯下","ともした","Odyssey","第2部Vol.1 オデュッセイア編"],
-  ["ナナミ","護守","このかみ","Odyssey","DIVE into OCEAN！"],
-  ["ミツキ","千石","せんごく","Odyssey","第2部Vol.1 オデュッセイア編"],
-  ["サナエ","船守","ふなもり","Odyssey","第2部Vol.1 オデュッセイア編"],
-  ["連邦生徒会長","","","Federal","プロローグ"],
-  ["リン","七神","","Federal","プロローグ"],
-  ["モモカ","由良木","","Federal","プロローグ"],
-  ["カヤ","不知火","","Federal","Vol.4 カルバノグの兎編"],
-  ["アユム","","","Federal","ミッション"],
-  ["スモモ","","","Federal","Vol.3 エデン条約編"],
-  ["アオイ","扇喜","おうぎ","Federal","Vol.3 エデン条約編"],
-  ["ハイネ","","","Federal","Vol.3 エデン条約編"],
-  ["シノン","川流","","Kronos","新春狂想曲第68番"],
-  ["マイ","風巻","","Kronos","戦術対抗戦"],
-  ["アキラ","清澄","","ETC","白亜の予告状"],
-  ["カイ","申谷","しんたに","ETC","龍武同舟"],
-  ["アケミ","栗浜","くりはま","ETC","Sheside outside"],
-  ["ニヤニヤ教授","","","ETC","Sheside outside"],
-  ["キョウコ","密井","みつい","ETC",""],
-  ["アイン","","","ETC","特殊作戦「デカグラマトン」編"],
-  ["ソフ","","","ETC","特殊作戦「デカグラマトン」編"],
-  ["オウル","","","ETC","特殊作戦「デカグラマトン」編"],
-  ["マルクト","","","ETC","特殊作戦「デカグラマトン」編"],
-  ["ジェネラル","","","ETC","Vol.4 カルバノグの兎編"],
-  ["デカルト","","","ETC","Vol.4 カルバノグの兎編"],
-  ["ソラ","","","ETC","ショップ"],
-  ["アロナ","","","ETC","プロローグ"],
-  ["プラナ","","","ETC","Final.あまねく奇跡の始発点編"],
-  ["黒服","","","ETC","Vol.1 対策委員会編"],
+// ゲームでは未実装（ストーリー等に登場のみ）のキャラ。ここが唯一の定義（画像・出典もここに書く）。
+// 名前などの出典：神ゲー攻略「未実装キャラ一覧」（2026/10/24更新）、ゲームエイト「未実装キャラ一覧」
+//   name    表示名（衣装違いは「コユキ（バニーガール）」のように全角かっこ）
+//   family / ruby / school（SchaleDBの学園キー）/ debut（初登場）
+//   img     画像のファイル名（拡張子なし）。images/npc/card/<img>.webp（カード用 400×452）と
+//           images/npc/portrait/<img>.webp（詳細用・全身）を使う。書かなければ名前カード
+//   src     画像の元ファイル（Blue Archive Wiki の File: 名）。URL・SHA256 の記録は images/npc/sources.csv
+//   aka     SchaleDBに実装されたとき名前が違う場合の別表記（一致したら内蔵リストから外す）
+const NPCS = [
+  { name:"ユメ", family:"梔子", ruby:"くちなし", school:"Abydos", debut:"Vol.1 対策委員会編", img:"yume", src:"Yume_01.png" },
+  { name:"コユキ（バニーガール）", school:"Millennium", debut:"船上のバニーチェイサー", img:"koyuki_bunnysuit", src:"Koyuki_(Bunnysuit)_01.png" },
+  { name:"チヒロ（キャンプ）", school:"Millennium", debut:"電脳新春行進曲", img:"chihiro_camping", src:"Chihiro_(Camping)_01.png" },
+  { name:"トキ（制服）", school:"Millennium", debut:"Vol.2 時計じかけの花のパヴァーヌ編", img:"toki_school_uniform", src:"Toki_(School_Uniform)_01.png" },
+  { name:"ミライ", school:"Millennium", debut:"Code:BOX ミレニアムに迫る影", img:"mirai", src:"Mirai_01.png" },
+  { name:"ツバサ", family:"羽咋", ruby:"はねもと", school:"Millennium", debut:"キヴォトス・未確認ミステリー", img:"tsubasa", src:"Tsubasa_01.png" },
+  { name:"マコト（ドレス）", school:"Gehenna", debut:"陽ひらく彼女たちの小夜曲", img:"makoto_dress", src:"Makoto_(Dress)_01.png" },
+  { name:"イブキ（ドレス）", school:"Gehenna", debut:"陽ひらく彼女たちの小夜曲", img:"ibuki_dress", src:"Ibuki_(Dress)_01.png" },
+  { name:"雷帝", school:"Gehenna", debut:"Vol.1 対策委員会編" },
+  { name:"マユミ", family:"降旗", ruby:"ふりはた", school:"Gehenna", debut:"第2部Vol.1 炎と影編", img:"mayumi", src:"Mayumi_01.png" },
+  { name:"カレン", family:"明楽", ruby:"みょうらく", school:"Gehenna", debut:"第2部Vol.1 炎と影編", img:"karen", src:"Karen_01.png" },
+  { name:"ショウコ", family:"五十嵐", ruby:"いがらし", school:"Gehenna", debut:"第2部Vol.1 炎と影編", img:"shouko", src:"Shouko_01.png" },
+  { name:"クズノハ", school:"Hyakkiyako", debut:"Vol.3 エデン条約編", img:"kuzunoha", src:"Kuzunoha_01.png" },
+  { name:"アラタ", school:"Hyakkiyako", debut:"Vol.5 百花繚乱編", img:"arata", src:"Arata_01.png" },
+  { name:"アヤメ", family:"七稜", ruby:"ななかど", school:"Hyakkiyako", debut:"Vol.5 百花繚乱編", img:"ayame", src:"Ayame_01.png" },
+  { name:"シュロ", family:"箭吹", ruby:"やぶき", school:"Hyakkiyako", debut:"Vol.5 百花繚乱編", img:"shuro", src:"Shuro_01.png" },
+  { name:"コクリコ", school:"Hyakkiyako", debut:"Vol.5 百花繚乱編", img:"kokuriko", src:"Kokuriko_01.png" },
+  { name:"アザミ", family:"土生", ruby:"はぶ", school:"Hyakkiyako", debut:"Vol.5 百花繚乱編", img:"azami", src:"Azami_01.png" },
+  { name:"カグヤ", family:"漆原", ruby:"うるしばら", school:"Shanhaijing", debut:"月華夢想", img:"kaguya", src:"Kaguya_01.png" },
+  { name:"メル（温泉）", school:"RedWinter", debut:"227号温泉郷の運営記録！", img:"meru_hot_spring", src:"Meru_(Hot_Spring)_diorama_01.png" },
+  { name:"ミスズ", family:"監原", ruby:"かんばら", school:"Valkyrie", debut:"キヴォトス・未確認ミステリー", img:"misuzu", src:"Misuzu_01.png" },
+  { name:"ユキノ", family:"七度", ruby:"しちど", school:"SRT", debut:"Vol.4 カルバノグの兎編", img:"yukino", src:"Yukino_01.png" },
+  { name:"マイア", family:"立木", ruby:"たちき", school:"Arius", debut:"Vol.6 過ぎ去りし刻のオラトリオ", img:"maia", src:"Maia_01.png" },
+  { name:"スオウ", family:"朝霧", ruby:"あさぎり", school:"Highlander", debut:"Vol.1 対策委員会編", img:"suou", src:"Suou_01.png" },
+  { name:"ミリア", school:"Wildhunt", debut:"我らオカルト研究会！", img:"miria", src:"Akira_(Miria)_01.png" },
+  { name:"ヒロミ", school:"Wildhunt", debut:"誰が為の芸術", img:"hiromi", src:"Hiromi_01.png" },
+  { name:"ツムギ", school:"Wildhunt", debut:"-ive aLIVE!", img:"tsumugi", src:"Tsumugi_01.png" },
+  { name:"スミカ", family:"小森", ruby:"こもり", school:"Odyssey", debut:"出航！万魔船 マコト議長の華麗なる避暑", img:"sumika", src:"Sumika_01.png" },
+  { name:"サユリ", school:"Odyssey", debut:"DIVE into OCEAN！", img:"sayuri", src:"Sayuri_01.png" },
+  { name:"マキナ", school:"Odyssey", debut:"DIVE into OCEAN！", img:"makina", src:"Makina_01.png" },
+  { name:"ミナト", family:"海路", ruby:"うみじ", school:"Odyssey", debut:"第2部Vol.1 オデュッセイア編", img:"minato", src:"Minato_01.png" },
+  { name:"アミ", family:"灯下", ruby:"ともした", school:"Odyssey", debut:"第2部Vol.1 オデュッセイア編", img:"ami", src:"Ami_01.png" },
+  { name:"ナナミ", family:"護守", ruby:"このかみ", school:"Odyssey", debut:"DIVE into OCEAN！", img:"nanami", src:"Nanami_01.png" },
+  { name:"ミツキ", family:"千石", ruby:"せんごく", school:"Odyssey", debut:"第2部Vol.1 オデュッセイア編", img:"mitsuki", src:"Mitsuki_01.png" },
+  { name:"サナエ", family:"船守", ruby:"ふなもり", school:"Odyssey", debut:"第2部Vol.1 オデュッセイア編", img:"sanae", src:"Sanae_01.png" },
+  { name:"連邦生徒会長", school:"Federal", debut:"プロローグ", img:"student_council_president", src:"Student_Council_President_01.png" },
+  { name:"リン", family:"七神", school:"Federal", debut:"プロローグ", img:"rin", src:"Rin_01.png" },
+  { name:"モモカ", family:"由良木", school:"Federal", debut:"プロローグ", img:"momoka", src:"Momoka_01.png" },
+  { name:"カヤ", family:"不知火", school:"Federal", debut:"Vol.4 カルバノグの兎編", img:"kaya", src:"Kaya_01.png" },
+  { name:"アユム", school:"Federal", debut:"ミッション", img:"ayumu", src:"Ayumu_01.png" },
+  { name:"スモモ", school:"Federal", debut:"Vol.3 エデン条約編", img:"sumomo", src:"Sumomo_01.png" },
+  { name:"アオイ", family:"扇喜", ruby:"おうぎ", school:"Federal", debut:"Vol.3 エデン条約編", img:"aoi", src:"Aoi_01.png" },
+  { name:"ハイネ", school:"Federal", debut:"Vol.3 エデン条約編", img:"haine", src:"Haine_01.png" },
+  { name:"シノン", family:"川流", school:"Kronos", debut:"新春狂想曲第68番", img:"shinon", src:"Shinon_01.png" },
+  { name:"マイ", family:"風巻", school:"Kronos", debut:"戦術対抗戦", img:"mai", src:"Mai_01.png" },
+  { name:"アキラ", family:"清澄", school:"ETC", debut:"白亜の予告状", img:"akira", src:"Akira_01.png" },
+  { name:"カイ", family:"申谷", ruby:"しんたに", school:"ETC", debut:"龍武同舟", img:"kai", src:"Kai_01.png" },
+  { name:"アケミ", family:"栗浜", ruby:"くりはま", school:"ETC", debut:"Sheside outside", img:"akemi", src:"Akemi_01.png" },
+  { name:"ニヤニヤ教授", school:"ETC", debut:"Sheside outside", img:"professor_smug", src:"Professor_Smug_01.png" },
+  { name:"キョウコ", family:"密井", ruby:"みつい", school:"ETC" },
+  { name:"アイン", school:"ETC", debut:"特殊作戦「デカグラマトン」編", img:"ein", src:"Ein_01.png" },
+  { name:"ソフ", school:"ETC", debut:"特殊作戦「デカグラマトン」編", img:"sof", src:"Sof_01.png" },
+  { name:"オウル", school:"ETC", debut:"特殊作戦「デカグラマトン」編", img:"ohr", src:"Ohr_01.png" },
+  { name:"マルクト", school:"ETC", debut:"特殊作戦「デカグラマトン」編", img:"malkuth", src:"Malkuth_01.png" },
+  { name:"ジェネラル", school:"ETC", debut:"Vol.4 カルバノグの兎編", img:"kaiser_pmc_general", src:"Kaiser_PMC_General_00.png" },
+  { name:"デカルト", school:"ETC", debut:"Vol.4 カルバノグの兎編", img:"descartes", src:"Descartes_01.png" },
+  { name:"ソラ", school:"ETC", debut:"ショップ", img:"sora", src:"Sora_01.png" },
+  { name:"アロナ", school:"ETC", debut:"プロローグ", img:"arona", src:"Arona_01.png" },
+  { name:"プラナ", school:"ETC", debut:"Final.あまねく奇跡の始発点編", img:"plana", src:"Plana_01.png" },
+  { name:"黒服", school:"ETC", debut:"Vol.1 対策委員会編", img:"black_suit", src:"Black_Suit_00.png" },
 ];
 
 const $ = id => document.getElementById(id);
@@ -273,11 +277,12 @@ async function load(){
         year: s.SchoolYear, age: s.CharacterAge, birthday: s.Birthday, height: s.CharHeightMetric,
         hobby: s.Hobby, intro: s.ProfileIntroduction, voice: s.CharacterVoice, illust: s.Illustrator,
       }));
-      // SchaleDBに入った（実装された）キャラは内蔵リストから外す
-      const have = new Set(students.map(s => s.name));
-      const npcs = NPC_RAW.filter(r => !have.has(r[0])).map((r,i) => ({
-        id: "n"+i, npc: true, released: false, alt: /[（(]/.test(r[0]),
-        name: r[0], family: r[1], personal: r[0].replace(/[（(].*$/, ""), ruby: r[2], school: r[3], debut: r[4],
+      // SchaleDBに入った（実装された）キャラは内蔵リストから外す（空白・かっこの全角半角の違いは無視、aka も見る）
+      const key = t => String(t||"").normalize("NFKC").replace(/\s+/g, "");
+      const have = new Set(students.map(s => key(s.name)));
+      const npcs = NPCS.filter(n => ![n.name, ...(n.aka||[])].some(x => have.has(key(x)))).map(n => ({
+        ...n, id: "npc:"+n.name, npc: true, released: false, alt: /[（(]/.test(n.name),
+        personal: n.name.replace(/[（(].*$/, ""),
       }));
       students = students.concat(npcs);
       $("status").textContent = `${src.name}から ${students.length - npcs.length} 人 ＋ストーリー登場のみのキャラ ${npcs.length} 人`;
@@ -359,22 +364,24 @@ function esc(t){ return String(t??"").replace(/[&<>"']/g, c => ({"&":"&amp;","<"
 
 function imgTag(s, kind){
   if(s.npc){
-    // images/npc/<名前>.webp / .png / .jpg があれば表示、なければ名前カード
-    // 詳細画面は images/npc/portrait/<名前>.webp（全身）を優先
-    const n = encodeURIComponent(s.name), exts = ["webp","png","jpg","jpeg"];
-    const urls = (kind === "portrait" ? [`images/npc/portrait/${n}.webp`] : []).concat(exts.map(x => `images/npc/${n}.${x}`));
-    return `<img src="${urls[0]}" data-alt="${urls.slice(1).join("|")}" data-npc="${s.id}" alt="${esc(s.name)}" loading="lazy" onerror="nextImg(this)">`;
+    // 画像は NPCS の img で指定。カードは card/、詳細画面は portrait/（全身）。img が無ければ名前カード
+    if(!s.img) return npcCard(s);
+    const url = `images/npc/${kind === "portrait" ? "portrait" : "card"}/${encodeURIComponent(s.img)}.webp`;
+    return `<img src="${url}" data-npc="${esc(s.id)}" alt="${esc(s.name)}" loading="lazy" onerror="nextImg(this)">`;
   }
   if(s.custom) return s.img ? `<img src="${esc(s.img)}" alt="${esc(s.name)}" loading="lazy" referrerpolicy="no-referrer">` : `<div class="noimg">画像なし</div>`;
   const urls = IMG_BASES.map(b => `${b}${kind}/${s.id}.webp`);
   return `<img src="${urls[0]}" data-alt="${urls.slice(1).join("|")}" alt="${esc(s.name)}" loading="lazy" onerror="nextImg(this)">`;
 }
+function npcCard(s){
+  return `<div class="noimg npc"><span>${esc(s.family)}</span><b>${esc(s.personal)}</b><span>${esc(schoolJA[s.school]||"")}</span></div>`;
+}
 function nextImg(el){
   const rest = (el.dataset.alt||"").split("|").filter(Boolean);
   if(rest.length){ el.dataset.alt = rest.slice(1).join("|"); el.src = rest[0]; }
   else if(el.dataset.npc){
-    const s = students.find(x => x.id === el.dataset.npc), t = document.createElement("template");
-    t.innerHTML = `<div class="noimg npc"><span>${esc(s.family)}</span><b>${esc(s.personal)}</b><span>${esc(schoolJA[s.school]||"")}</span></div>`;
+    const t = document.createElement("template");
+    t.innerHTML = npcCard(students.find(x => x.id === el.dataset.npc));
     el.replaceWith(t.content);
   }
   else el.replaceWith(Object.assign(document.createElement("div"), { className:"noimg", textContent:"画像を読み込めません" }));
@@ -431,7 +438,7 @@ function openDetail(s){
       <p>${esc(s.custom ? s.note : s.intro)}</p>
       <div class="actions">
         ${s.custom ? "" : `${s.npc ? "" : `<a href="https://schaledb.com/student/${encodeURIComponent(s.path)}" target="_blank" rel="noopener">SchaleDBで見る</a>`}
-        ${s.npc && NPC_IMG_SRC[s.name] ? `<a href="${wikiFile(NPC_IMG_SRC[s.name])}" target="_blank" rel="noopener" title="画像の出典">画像：Blue Archive Wiki</a>` : ""}
+        ${s.npc && s.src ? `<a href="${wikiFile(s.src)}" target="_blank" rel="noopener" title="画像の出典">画像：Blue Archive Wiki</a>` : ""}
         <a href="https://dic.pixiv.net/a/${encodeURIComponent((s.family||"")+(s.personal||s.name))}" target="_blank" rel="noopener">ピクシブ百科事典</a>`}
         <button id="dlgClose">閉じる</button>
       </div>
