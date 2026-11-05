@@ -152,7 +152,7 @@ footer a{color:var(--muted)}
 
   <footer>
     生徒データと画像は <a href="https://schaledb.com/" target="_blank" rel="noopener">SchaleDB</a> から読み込んで表示しています（このファイル自体には含みません）。
-    ストーリーにだけ登場する未実装キャラは画像なしの名前カードで出します（一覧は神ゲー攻略・ゲームエイトの「未実装キャラ一覧」をもとに作成）。スペースキーでも引けます。カード右上の 📌 で固定すると、次に引いても残ります。
+    ストーリーにだけ登場する未実装キャラの画像は <a href="https://bluearchive.wiki/" target="_blank" rel="noopener">Blue Archive Wiki</a> 掲載の立ち絵をトリミングしたものです（画像がないキャラは名前カード。一覧は神ゲー攻略・ゲームエイトの「未実装キャラ一覧」をもとに作成）。スペースキーでも引けます。カード右上の 📌 で固定すると、次に引いても残ります。
   </footer>
 </div>
 
@@ -164,6 +164,9 @@ const SOURCES = [
   { name: "SchaleDB（GitHubミラー・古いデータ）", data: "https://raw.githubusercontent.com/SchaleDB/SchaleDB/main/data/jp/", img: "https://raw.githubusercontent.com/SchaleDB/SchaleDB/main/images/student/" },
 ];
 const IMG_BASES = SOURCES.map(s => s.img);
+// 未実装キャラ画像の元ファイル（Blue Archive Wiki のファイル名。一覧は images/npc/sources.csv）
+const NPC_IMG_SRC = {"ユメ":"Yume_01.png","コユキ（バニーガール）":"Koyuki_(Bunnysuit)_01.png","チヒロ（キャンプ）":"Chihiro_(Camping)_01.png","トキ（制服）":"Toki_(School_Uniform)_01.png","ミライ":"Mirai_01.png","ツバサ":"Tsubasa_01.png","マコト（ドレス）":"Makoto_(Dress)_01.png","イブキ（ドレス）":"Ibuki_(Dress)_01.png","マユミ":"Mayumi_01.png","カレン":"Karen_01.png","ショウコ":"Shouko_01.png","クズノハ":"Kuzunoha_01.png","アラタ":"Arata_01.png","アヤメ":"Ayame_01.png","シュロ":"Shuro_01.png","コクリコ":"Kokuriko_01.png","アザミ":"Azami_01.png","カグヤ":"Kaguya_01.png","メル（温泉）":"Meru_(Hot_Spring)_diorama_01.png","ミスズ":"Misuzu_01.png","ユキノ":"Yukino_01.png","マイア":"Maia_01.png","スオウ":"Suou_01.png","ミリア":"Akira_(Miria)_01.png","ヒロミ":"Hiromi_01.png","ツムギ":"Tsumugi_01.png","スミカ":"Sumika_01.png","サユリ":"Sayuri_01.png","マキナ":"Makina_01.png","ミナト":"Minato_01.png","アミ":"Ami_01.png","ナナミ":"Nanami_01.png","ミツキ":"Mitsuki_01.png","サナエ":"Sanae_01.png","連邦生徒会長":"Student_Council_President_01.png","リン":"Rin_01.png","モモカ":"Momoka_01.png","カヤ":"Kaya_01.png","アユム":"Ayumu_01.png","スモモ":"Sumomo_01.png","アオイ":"Aoi_01.png","ハイネ":"Haine_01.png","シノン":"Shinon_01.png","マイ":"Mai_01.png","アキラ":"Akira_01.png","カイ":"Kai_01.png","アケミ":"Akemi_01.png","ニヤニヤ教授":"Professor_Smug_01.png","アイン":"Ein_01.png","ソフ":"Sof_01.png","オウル":"Ohr_01.png","マルクト":"Malkuth_01.png","ジェネラル":"Kaiser_PMC_General_00.png","デカルト":"Descartes_01.png","ソラ":"Sora_01.png","アロナ":"Arona_01.png","プラナ":"Plana_01.png","黒服":"Black_Suit_00.png"};
+const wikiFile = f => "https://bluearchive.wiki/wiki/File:" + encodeURI(f);
 const SCHOOL_JA = { Abydos:"アビドス", Gehenna:"ゲヘナ", Trinity:"トリニティ", Millennium:"ミレニアム", Hyakkiyako:"百鬼夜行", Shanhaijing:"山海経", RedWinter:"レッドウィンター", Valkyrie:"ヴァルキューレ", SRT:"SRT", Arius:"アリウス", Highlander:"ハイランダー", Wildhunt:"ワイルドハント", Sakugawa:"柵川中学", Tokiwadai:"常盤台中学", Odyssey:"オデュッセイア", Federal:"連邦生徒会", Kronos:"クロノス", ETC:"その他", Custom:"自分で追加" };
 
 // ゲームでは未実装（ストーリー等に登場のみ）のキャラ。出典：神ゲー攻略「未実装キャラ一覧」（2026/10/24更新）、ゲームエイト「未実装キャラ一覧」
@@ -402,6 +405,7 @@ function openDetail(s){
       <p>${esc(s.custom ? s.note : s.intro)}</p>
       <div class="actions">
         ${s.custom ? "" : `${s.npc ? "" : `<a href="https://schaledb.com/student/${encodeURIComponent(s.path)}" target="_blank" rel="noopener">SchaleDBで見る</a>`}
+        ${s.npc && NPC_IMG_SRC[s.name] ? `<a href="${wikiFile(NPC_IMG_SRC[s.name])}" target="_blank" rel="noopener" title="画像の出典">画像：Blue Archive Wiki</a>` : ""}
         <a href="https://dic.pixiv.net/a/${encodeURIComponent((s.family||"")+(s.personal||s.name))}" target="_blank" rel="noopener">ピクシブ百科事典</a>`}
         <button id="dlgClose">閉じる</button>
       </div>
