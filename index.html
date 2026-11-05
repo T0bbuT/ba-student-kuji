@@ -61,7 +61,7 @@ dialog{border:1px solid var(--line);border-radius:16px;background:var(--panel);c
 dialog::backdrop{background:rgba(5,12,22,.55)}
 .dlg{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:18px;padding:18px}
 @media (max-width:600px){.dlg{grid-template-columns:1fr}}
-.dlg img{width:100%;border-radius:10px;background:var(--bg)}
+.dlg img{width:100%;max-height:min(75vh,720px);object-fit:contain;border-radius:10px;background:var(--bg)}
 .dlg h2{font-family:var(--display);margin:0 0 2px;font-size:24px}
 .dlg .ruby{color:var(--muted);font-size:12px}
 .dlg dl{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:10px 0}
@@ -360,7 +360,7 @@ function esc(t){ return String(t??"").replace(/[&<>"']/g, c => ({"&":"&amp;","<"
 function imgTag(s, kind){
   if(s.npc){
     // images/npc/<名前>.webp / .png / .jpg があれば表示、なければ名前カード
-    // 詳細画面は images/npc/portrait/<名前>.webp（上半身）を優先
+    // 詳細画面は images/npc/portrait/<名前>.webp（全身）を優先
     const n = encodeURIComponent(s.name), exts = ["webp","png","jpg","jpeg"];
     const urls = (kind === "portrait" ? [`images/npc/portrait/${n}.webp`] : []).concat(exts.map(x => `images/npc/${n}.${x}`));
     return `<img src="${urls[0]}" data-alt="${urls.slice(1).join("|")}" data-npc="${s.id}" alt="${esc(s.name)}" loading="lazy" onerror="nextImg(this)">`;
