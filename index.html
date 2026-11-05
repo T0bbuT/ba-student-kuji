@@ -279,9 +279,8 @@ async function load(){
         id: "n"+i, npc: true, released: false, alt: /[（(]/.test(r[0]),
         name: r[0], family: r[1], personal: r[0].replace(/[（(].*$/, ""), ruby: r[2], school: r[3], debut: r[4],
       }));
-      const un = students.filter(s => !s.released).length;
       students = students.concat(npcs);
-      $("status").textContent = `${src.name}から ${students.length - npcs.length} 人${un ? `（うち実装予定 ${un} 人）` : ""}＋ストーリー登場のみのキャラ ${npcs.length} 人`;
+      $("status").textContent = `${src.name}から ${students.length - npcs.length} 人 ＋ストーリー登場のみのキャラ ${npcs.length} 人`;
       buildSchools();
       return;
     }catch(e){ console.warn("読み込み失敗:", src.name, e); }
