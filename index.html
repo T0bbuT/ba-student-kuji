@@ -35,6 +35,8 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-family:var(--display);font-weight:800;font-size:16px;padding:10px 26px}
 details{width:100%}
 summary{cursor:pointer;color:var(--muted)}
+.school-btns{display:flex;gap:8px;margin-top:8px}
+.school-btns button{padding:3px 12px;font-size:13px}
 .schools{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
 .card{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;animation:pop .35s ease both}
@@ -128,10 +130,11 @@ footer a{color:var(--muted)}
       </select>
     </label>
     <label><input type="checkbox" id="alts"> 衣装違いも出す</label>
-    <label><input type="checkbox" id="uniq" checked> 同じ生徒は1回だけ</label>
+    <label title="一度出た生徒は、全員が一巡するまで次の「引く」でも出ません"><input type="checkbox" id="uniq" checked> 同じ生徒は1回だけ <span class="status" id="left"></span></label>
     <button id="copy" title="今出ている生徒の名前をコピー">名前をコピー</button>
     <details id="schoolBox">
       <summary>学園で絞り込む</summary>
+      <div class="school-btns"><button type="button" id="schAll">全選択</button><button type="button" id="schNone">全解除</button></div>
       <div class="schools" id="schools"></div>
     </details>
     <details>
@@ -276,9 +279,8 @@ async function load(){
         id: "n"+i, npc: true, released: false, alt: /[（(]/.test(r[0]),
         name: r[0], family: r[1], personal: r[0].replace(/[（(].*$/, ""), ruby: r[2], school: r[3], debut: r[4],
       }));
-      const un = students.filter(s => !s.released).length;
       students = students.concat(npcs);
-      $("status").textContent = `${src.name}から ${students.length - npcs.length} 人（うち実装予定 ${un} 人）＋ストーリー登場のみのキャラ ${npcs.length} 人`;
+      $("status").textContent = `${src.name}から ${students.length - npcs.length} 人 ＋ストーリー登場のみのキャラ ${npcs.length} 人`;
       buildSchools();
       return;
     }catch(e){ console.warn("読み込み失敗:", src.name, e); }
@@ -291,8 +293,14 @@ function buildSchools(){
   const names = [...new Set(students.map(s => s.school))].sort((a,b)=> countOf(b)-countOf(a));
   if(custom.length) names.push("Custom");
   $("schools").innerHTML = names.map(k => `<label><input type="checkbox" value="${k}" ${!saved || saved.includes(k) ? "checked":""}> ${esc(schoolJA[k]||k)} <span class="status">${k==="Custom"?custom.length:countOf(k)}</span></label>`).join("");
-  $("schools").onchange = () => store.set("schools", selectedSchools());
+  $("schools").onchange = () => { store.set("schools", selectedSchools()); updateLeft(); };
 }
+function setAllSchools(on){
+  for(const i of $("schools").querySelectorAll("input")) i.checked = on;
+  store.set("schools", selectedSchools()); updateLeft();
+}
+$("schAll").onclick = () => setAllSchools(true);
+$("schNone").onclick = () => setAllSchools(false);
 const countOf = k => students.filter(s => s.school===k).length;
 const selectedSchools = () => [...$("schools").querySelectorAll("input:checked")].map(i => i.value);
 
@@ -308,6 +316,15 @@ function pool(){
 
 function baseName(s){ return s.custom ? s.name : (s.personal || s.name.replace(/[（(].*$/, "")); }
 
+// 「同じ生徒は1回だけ」: 一度出た生徒（衣装違いも同じ生徒として扱う）は、一巡するまで出さない
+let drawn = new Set();
+function updateLeft(){
+  if(!$("uniq").checked || !students.length){ $("left").textContent = ""; return; }
+  const names = new Set(pool().map(baseName));
+  let left = 0; for(const k of names) if(!drawn.has(k)) left++;
+  $("left").textContent = `（残り ${left} / ${names.size} 人）`;
+}
+
 function roll(){
   const n = +$("count").value;
   const keep = shown.filter(s => locked.has(s.id)).slice(0, n);
@@ -316,16 +333,25 @@ function roll(){
   const uniq = $("uniq").checked;
   const cand = shuffle(pool().filter(s => !used.has(s.id)));
   const out = [...keep];
-  for(const s of cand){
-    if(out.length >= n) break;
-    if(uniq && usedNames.has(baseName(s))) continue;
-    out.push(s); usedNames.add(baseName(s));
-  }
+  const take = skip => {
+    for(const s of cand){
+      if(out.length >= n) break;
+      const k = baseName(s);
+      if(uniq && (usedNames.has(k) || skip(k))) continue;
+      out.push(s); usedNames.add(k);
+    }
+  };
+  if(uniq){
+    take(k => drawn.has(k));
+    // まだ出ていない生徒が足りなくなったら一巡したとみなして履歴をリセット
+    if(out.length < n){ drawn = new Set(); take(() => false); }
+    for(const s of out) drawn.add(baseName(s));
+  }else take(() => false);
   // 固定カードの位置はそのまま、空いた所に新しい生徒を入れる
   const fresh = out.slice(keep.length);
   shown = shown.slice(0, n).map(s => locked.has(s.id) ? s : fresh.shift()).filter(Boolean).concat(fresh);
   if(!shown.length){ $("grid").innerHTML = '<p class="status">条件に合う生徒がいません。絞り込みを広げてください。</p>'; return; }
-  render();
+  render(); updateLeft();
 }
 
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j = Math.random()*(i+1)|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -433,7 +459,7 @@ $("copy").onclick = async () => {
 for(const id of ["count","unreleased","alts","uniq"]){
   const el = $(id), key = id==="count" ? "count9" : id, saved = store.get(key, null);
   if(saved!=null){ el.type==="checkbox" ? el.checked = saved : el.value = saved; }
-  el.onchange = () => store.set(key, el.type==="checkbox" ? el.checked : el.value);
+  el.onchange = () => { store.set(key, el.type==="checkbox" ? el.checked : el.value); if(id==="uniq") drawn = new Set(); updateLeft(); };
 }
 
 function renderCustom(){
