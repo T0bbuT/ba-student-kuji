@@ -219,7 +219,9 @@ const NPC_RAW = [
   ["アケミ","栗浜","くりはま","ETC","Sheside outside"],
   ["ニヤニヤ教授","","","ETC","Sheside outside"],
   ["キョウコ","密井","みつい","ETC",""],
-  ["アイン・ソフ・オウル","","","ETC","特殊作戦「デカグラマトン」編"],
+  ["アイン","","","ETC","特殊作戦「デカグラマトン」編"],
+  ["ソフ","","","ETC","特殊作戦「デカグラマトン」編"],
+  ["オウル","","","ETC","特殊作戦「デカグラマトン」編"],
   ["マルクト","","","ETC","特殊作戦「デカグラマトン」編"],
   ["ジェネラル","","","ETC","Vol.4 カルバノグの兎編"],
   ["デカルト","","","ETC","Vol.4 カルバノグの兎編"],
@@ -329,7 +331,9 @@ function esc(t){ return String(t??"").replace(/[&<>"']/g, c => ({"&":"&amp;","<"
 function imgTag(s, kind){
   if(s.npc){
     // images/npc/<名前>.webp / .png / .jpg があれば表示、なければ名前カード
-    const urls = ["webp","png","jpg","jpeg"].map(x => `images/npc/${encodeURIComponent(s.name)}.${x}`);
+    // 詳細画面は images/npc/portrait/<名前>.webp（上半身）を優先
+    const n = encodeURIComponent(s.name), exts = ["webp","png","jpg","jpeg"];
+    const urls = (kind === "portrait" ? [`images/npc/portrait/${n}.webp`] : []).concat(exts.map(x => `images/npc/${n}.${x}`));
     return `<img src="${urls[0]}" data-alt="${urls.slice(1).join("|")}" data-npc="${s.id}" alt="${esc(s.name)}" loading="lazy" onerror="nextImg(this)">`;
   }
   if(s.custom) return s.img ? `<img src="${esc(s.img)}" alt="${esc(s.name)}" loading="lazy" referrerpolicy="no-referrer">` : `<div class="noimg">画像なし</div>`;
