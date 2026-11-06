@@ -1,0 +1,62 @@
+name: 新しいNPCの確認
+
+# 毎週 Blue Archive Wiki の Category:NPC を見て、まだ知らないページがあれば
+# NPCS の下書き・画像・出典を入れた PR を作る（マージは手動）。
+# 仕組みの説明は tools/npc-watch/README.md
+
+on:
+  schedule:
+    - cron: "0 0 * * 1" # 毎週月曜 9:00 (JST)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency: npc-watch
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Category:NPC と既知リストを比べる
+        id: check
+        run: python3 tools/npc-watch/check.py
+
+      - name: 既知リストを main に記録する（PR を閉じても次回から通知しないため）
+        if: steps.check.outputs.new_count != '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+          git add tools/npc-watch/known.txt
+          git commit -m "NPC既知リストを更新"
+          git push origin HEAD:main
+
+      - name: 画像処理のライブラリを入れる
+        if: steps.check.outputs.new_count != '0'
+        run: pip install pillow "opencv-python-headless<5"
+
+      - name: 下書きを作る
+        id: draft
+        if: steps.check.outputs.new_count != '0'
+        run: |
+          BRANCH="npc-watch/$(date -u +%Y%m%d)"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          git switch -c "$BRANCH"
+          python3 tools/npc-watch/draft.py --branch "$BRANCH"
+
+      - name: PR を作る
+        if: steps.draft.outputs.added_count && steps.draft.outputs.added_count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.draft.outputs.branch }}
+          COUNT: ${{ steps.draft.outputs.added_count }}
+        run: |
+          git add index.html images/npc
+          git commit -m "新しいNPCの下書きを追加（${COUNT}件）"
+          git push origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" \
+            --title "新しいNPCの下書き ${COUNT}件（$(date -u +%Y-%m-%d)）" \
+            --body-file tools/npc-watch/pr_body.md
