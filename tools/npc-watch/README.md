@@ -6,24 +6,28 @@ GitHub Actions では動きません。Wiki（Miraheze）の Cloudflare のボ�
 
 ## 最初の準備（1回だけ）
 
-1. [Python 3](https://www.python.org/downloads/)、[Git](https://git-scm.com/)、[GitHub CLI](https://cli.github.com/) を入れる。
-2. ターミナル（PowerShell など）で:
-   ```
-   pip install pillow "opencv-python-headless<5"
-   gh auth login
-   git clone https://github.com/T0bbuT/ba-student-kuji.git
-   ```
+WSL（Ubuntu など）に [mise](https://mise.jdx.dev/) と Git が入っている前提です。
+
+```
+git clone https://github.com/T0bbuT/ba-student-kuji.git
+cd ba-student-kuji
+mise trust && mise install   # python・uv・gh が入る（mise.toml）
+gh auth login
+```
+
+画像処理のライブラリ（pillow・opencv）は、実行時に uv が専用の環境に自動で入れます。`pip install` は要りません。
 
 ## 実行するとき
 
 ```
 cd ba-student-kuji
-python tools/npc-watch/run_local.py
+mise run npc-check-dry   # 確認だけ（何も変えない）
+mise run npc-check       # 新着があれば PR を作る
 ```
 
 - 新着が無ければ「新しいNPCはありませんでした。」で終わります。
 - 新着があれば、`known.txt` を main に記録してから、下書きのブランチを push して PR を作ります。
-- 確認だけしたいときは `python tools/npc-watch/run_local.py --dry-run`（何も変えません）。
+- 自動で動かしたいときは、Windows のタスクスケジューラで `wsl -e bash -lc "cd ~/ba-student-kuji && mise run npc-check"` を登録します。「スケジュールされた時刻にタスクを開始できなかった場合、すぐにタスクを実行する」を有効にすると、PC が切れていた週も次の起動時に実行されます。
 
 ## 中でやっていること
 

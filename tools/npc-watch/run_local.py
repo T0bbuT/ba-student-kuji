@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["pillow", "opencv-python-headless<5"]
+# ///
 """PC で新しいNPCを確認し、あれば下書きPRを作る（手動で実行する用）。
 
-  python tools/npc-watch/run_local.py            # 確認して、新着があれば PR を作る
-  python tools/npc-watch/run_local.py --dry-run  # 新着の確認だけ（何も変えない）
+  mise run npc-check        # 確認して、新着があれば PR を作る
+  mise run npc-check-dry    # 新着の確認だけ（何も変えない）
+  （mise を使わないなら uv run tools/npc-watch/run_local.py [--dry-run]）
 
-必要なもの: Python 3、Git、GitHub CLI（gh、`gh auth login` 済み）、
-           `pip install pillow "opencv-python-headless<5"`
+必要なもの: Git と、mise.toml にある python・uv・gh（`gh auth login` 済み）。
+画像処理のライブラリは上の script ブロックを見て uv が用意する。
 リポジトリのフォルダの中ならどこから実行してもよい。
 """
 import json
