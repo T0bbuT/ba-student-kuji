@@ -4,9 +4,9 @@ name: 新しいNPCの確認
 # NPCS の下書き・画像・出典を入れた PR を作る（マージは手動）。
 # 仕組みの説明は tools/npc-watch/README.md
 
+# 注意: Blue Archive Wiki（Miraheze）は Cloudflare のボット対策で GitHub のサーバーからのアクセスを拒否するため、
+# ここでは成功しない（2026-11 時点）。自動実行は止め、手動実行だけ残している。
 on:
-  schedule:
-    - cron: "0 0 * * 1" # 毎週月曜 9:00 (JST)
   workflow_dispatch:
 
 permissions:
