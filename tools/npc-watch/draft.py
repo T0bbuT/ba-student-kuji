@@ -18,12 +18,13 @@ import os
 import re
 import sys
 import urllib.parse
-import urllib.request
 from datetime import date
 
 import cv2
 import numpy as np
 from PIL import Image
+
+from wikihttp import fetch
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
@@ -35,7 +36,6 @@ BODY = os.path.join(HERE, "pr_body.md")
 CASCADE = os.path.join(HERE, "lbpcascade_animeface.xml")
 CASCADE_URL = "https://raw.githubusercontent.com/nagadomi/lbpcascade_animeface/master/lbpcascade_animeface.xml"
 API = "https://bluearchive.wiki/w/api.php"
-UA = "ba-student-kuji-npc-watch/1.0 (+https://github.com/T0bbuT/ba-student-kuji)"
 
 CARD_W, CARD_H = 400, 452     # カード用（200:226）
 PORTRAIT_MAX_H = 1400         # 詳細用（全身・トリミングしない）
@@ -48,9 +48,7 @@ SCHOOL_ALIAS = {"redwinter": "RedWinter", "wildhunt": "Wildhunt", "gsc": "Federa
 
 
 def get(url, binary=False):
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        data = r.read()
+    data = fetch(url)
     return data if binary else json.loads(data)
 
 

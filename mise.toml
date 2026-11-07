@@ -1,0 +1,14 @@
+# 新しいNPCの確認（tools/npc-watch）を PC（WSL など）で動かすための道具
+# 最初に1回: mise install && gh auth login
+[tools]
+python = "3.12"
+uv = "latest"
+gh = "latest"
+
+[tasks.npc-check]
+description = "Wiki の新しいNPCを確認し、あれば下書きPRを作る"
+run = "uv run tools/npc-watch/run_local.py"
+
+[tasks.npc-check-dry]
+description = "Wiki の新しいNPCを確認するだけ（何も変えない）"
+run = "uv run tools/npc-watch/run_local.py --dry-run"

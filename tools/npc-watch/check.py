@@ -11,14 +11,14 @@ import json
 import os
 import sys
 import urllib.parse
-import urllib.request
+
+from wikihttp import fetch
 
 API = "https://bluearchive.wiki/w/api.php"
 CATEGORY = "Category:NPC"
 HERE = os.path.dirname(os.path.abspath(__file__))
 KNOWN = os.path.join(HERE, "known.txt")
 NEW = os.path.join(HERE, "new.json")
-UA = "ba-student-kuji-npc-watch/1.0 (+https://github.com/T0bbuT/ba-student-kuji)"
 
 
 def fetch_members():
@@ -29,9 +29,7 @@ def fetch_members():
             "cmtitle": CATEGORY, "cmlimit": "500", "cmprop": "title|timestamp",
             "cmnamespace": "0", **cont,
         }
-        req = urllib.request.Request(API + "?" + urllib.parse.urlencode(params), headers={"User-Agent": UA})
-        with urllib.request.urlopen(req, timeout=30) as r:
-            data = json.load(r)
+        data = json.loads(fetch(API + "?" + urllib.parse.urlencode(params), timeout=30))
         members += data["query"]["categorymembers"]
         if "continue" not in data:
             return members
