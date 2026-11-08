@@ -15,7 +15,9 @@ Eimi (Casual)
 Ein
 Golconde
 Haine
+Haruna (Unused skin)
 Hiromi
+Ibuki (Unused skin)
 Inquisitor - 0
 Kaguya
 Kai
@@ -40,6 +42,7 @@ Mirai
 Miria (unused)
 Misuzu
 Mitsuki
+Miyako (Unused skin)
 Momoka
 Nagomi
 Nanami
@@ -71,6 +74,7 @@ Suzumi (Casual)
 Tech-level 7
 Terra Machina
 The Purge
+Tomoe (Unused skin)
 Tsubasa
 Ultimate Overgod
 Underground Dweller
