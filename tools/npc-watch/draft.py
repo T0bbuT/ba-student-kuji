@@ -166,7 +166,10 @@ def main():
             skipped.append((title, url, f"ページを読めませんでした（{e}）"))
             continue
         f = npc_fields(wt) or {}
-        if re.search(r"\{\{\s*Unused content", wt, re.I) or re.search(r"\(unused", title, re.I):
+        # ページ全体が未使用コンテンツ（冒頭＝最初の見出しより前に {{Unused content}}）なら外す。
+        # 実在キャラのページでも「Trivia」節にだけ付いていることがあるので、そちらは外さない。
+        lead = re.split(r"^=", wt, maxsplit=1, flags=re.M)[0]
+        if re.search(r"\{\{\s*Unused content", lead, re.I) or re.search(r"\(unused", title, re.I):
             skipped.append((title, url, "未使用コンテンツ（ゲームに出ていない流出・没データ）なので外しました"))
             continue
         if f.get("DevName", "").startswith("TSS_"):
